@@ -6,7 +6,12 @@ use rand::Rng;
 use std::collections::{HashMap, HashSet};
 
 pub trait ShipTemplate {
-    fn new(start: Point, orientation: Orientation, board_size: &Board) -> Result<Ship>;
+    fn new(
+        start: Point,
+        orientation: Orientation,
+        board: &mut Vec<Point>,
+        occupied_places: &HashMap<Orientation, Vec<Point>>,
+    ) -> Result<Ship>;
     fn auto(
         board_size: &Board,
         board: &mut Vec<Point>,

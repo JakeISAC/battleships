@@ -5,15 +5,17 @@ use crate::ship_templates::template::ShipTemplate;
 use chrono::Utc;
 use itertools::Itertools;
 use std::collections::HashMap;
+use crate::ship_templates::submarine::Submarine;
 
 mod ai;
 mod board;
 mod communication;
 mod ship;
 mod ship_templates;
+mod game;
 
 fn main() {
-    let board_size = Board::new(1000, 1000);
+    let board_size = Board::new(3, 3);
     let mut board = board_size.get_board();
 
     let mut ships: Vec<Ship> = Vec::new();
@@ -25,8 +27,8 @@ fn main() {
     .cloned()
     .collect();
     let time_start = Utc::now();
-    for _ in 0..200 {
-        let ship = Carrier::auto(&board_size, &mut board, &occupied);
+    for _ in 0..6 {
+        let ship = Submarine::auto(&board_size, &mut board, &occupied);
         match ship {
             Ok(ship) => {
                 ships.push(ship.clone());

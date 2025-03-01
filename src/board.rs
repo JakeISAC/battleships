@@ -32,4 +32,3 @@ impl Board {
         self.points.clone()
     }
 }
-pub struct GameBoard {}

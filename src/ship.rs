@@ -2,6 +2,7 @@ use crate::board::Board;
 use anyhow::{anyhow, Result};
 use std::cmp::PartialEq;
 use std::fmt::{Display, Formatter};
+use std::ops::Not;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShipClass {
@@ -36,6 +37,17 @@ impl Orientation {
             0 => Some(Orientation::VERTICAL),
             1 => Some(Orientation::HORIZONTAL),
             _ => None
+        }
+    }
+}
+
+impl Not for Orientation {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Orientation::VERTICAL => Orientation::HORIZONTAL,
+            Orientation::HORIZONTAL => Orientation::VERTICAL
         }
     }
 }
@@ -103,21 +115,16 @@ impl Ship {
         size: usize,
         start: Point,
         orientation: Orientation,
-        board_size: &Board,
     ) -> Result<Self> {
         let mut fields: Vec<Status> = Vec::new();
         let position = {
             match orientation {
                 // move down
                 Orientation::VERTICAL => {
-                    if start.x + size - 1 > board_size.x {
-                        return Err(anyhow!(
-                            "Can not place a ship. Ship size extends beyond the board."
-                        ));
-                    }
+                    // calculate the end point based on ship size
                     let end = Point::new(start.x + size - 1, start.y);
 
-                    // calculate the points representing the ship
+                    // calculate the points representing the ship a.k.a modules
                     for i in start.x..=end.x {
                         fields.push(Status::OK(Point::new(i, start.y)));
                     }
@@ -126,14 +133,10 @@ impl Ship {
                 }
                 // move right
                 Orientation::HORIZONTAL => {
-                    if start.y + size - 1 > board_size.y {
-                        return Err(anyhow!(
-                            "Can not place a ship. Ship size extends beyond the board."
-                        ));
-                    }
+                    // calculate the end point based on ship size
                     let end = Point::new(start.x, start.y + size - 1);
 
-                    // calculate the points representing the ship
+                    // calculate the points representing the ship a.k.a modules
                     for i in start.y..=end.y {
                         fields.push(Status::OK(Point::new(start.x, i)));
                     }
