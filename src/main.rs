@@ -1,10 +1,10 @@
 use crate::board::Board;
 use crate::ship::{Orientation, Point, Ship};
-use crate::ship_templates::submarine::Submarine;
+use crate::ship_templates::carrier::Carrier;
 use crate::ship_templates::template::ShipTemplate;
+use chrono::Utc;
 use itertools::Itertools;
 use std::collections::HashMap;
-use crate::ship_templates::carrier::Carrier;
 
 mod ai;
 mod board;
@@ -12,17 +12,8 @@ mod communication;
 mod ship;
 mod ship_templates;
 
-/*
-    TODO:
-        Add a functionality where I ship gets to try both orientations in auto() mode.
-        This needs to be done by including orientation as an argument to select_random_position().
-        The orientation should be chosen at random in auto() function. So how it works it basically
-        should try both and take the first one that succeeds.
- */
-
-
 fn main() {
-    let board_size = Board::new(5, 5);
+    let board_size = Board::new(1000, 1000);
     let mut board = board_size.get_board();
 
     let mut ships: Vec<Ship> = Vec::new();
@@ -33,7 +24,8 @@ fn main() {
     .iter()
     .cloned()
     .collect();
-    for _ in 0..100 {
+    let time_start = Utc::now();
+    for _ in 0..200 {
         let ship = Carrier::auto(&board_size, &mut board, &occupied);
         match ship {
             Ok(ship) => {
@@ -49,7 +41,14 @@ fn main() {
             }
         }
     }
+    let time_end = Utc::now();
     ships.iter().for_each(|x| println!("{}", x));
+    println!(
+        "Entire operation took {} seconds, for game board size {}x{}",
+        (time_end - time_start).num_seconds(),
+        board_size.x,
+        board_size.y
+    );
 
     // let board = vec![vec![0; board_size.y]; board_size.x];
     // board.iter().for_each(|x| println!("{:?}", x));

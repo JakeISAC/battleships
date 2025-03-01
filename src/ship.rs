@@ -83,7 +83,7 @@ impl Point {
 pub struct Ship {
     class: ShipClass,
     fields: Vec<Status>,
-    position: (Point, Point), // hooks for the beginning and the end of the ship
+    position: (Point, Point), // (start, end)
     orientation: Orientation,
 }
 
@@ -158,7 +158,7 @@ impl Ship {
                     && hit_point.y >= self.position.0.y // start
                     && hit_point.y <= self.position.1.y // end
                 {
-                    // find if position of the hit in the ship 'structure' array
+                    // find the position of the hit in the ship 'structure' array
                     let index = self.fields.iter().position(|x| {
                         if let Status::OK(point) = x {
                             return point.y == hit_point.y;
@@ -166,7 +166,7 @@ impl Ship {
                         false
                     });
 
-                    // if it was not HIT already update
+                    // update if module was not HIT before
                     if let Some(index) = index {
                         self.fields[index] = Status::HIT(hit_point);
                         return true;
@@ -179,7 +179,7 @@ impl Ship {
                     && hit_point.x >= self.position.0.x // start
                     && hit_point.x <= self.position.1.x // end
                 {
-                    // find if position of the hit in the ship 'structure' array
+                    // find the position of the hit in the ship 'structure' array
                     let index = self.fields.iter().position(|x| {
                         if let Status::OK(point) = x {
                             return point.x == hit_point.x;
@@ -187,7 +187,7 @@ impl Ship {
                         false
                     });
 
-                    // if it was not HIT already update
+                    // update if module was not HIT before
                     if let Some(index) = index {
                         self.fields[index] = Status::HIT(hit_point);
                         return true;

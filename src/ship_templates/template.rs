@@ -15,63 +15,56 @@ pub trait ShipTemplate {
 
     fn select_random_position(
         ship_size: usize,
+        orientation: &Orientation,
         board_size: &Board,
         board: &mut Vec<Point>,
         occupied_places: &HashMap<Orientation, Vec<Point>>,
-    ) -> Result<(Point, Orientation)> {
+    ) -> Result<Point> {
         let mut rng = rand::rng();
-        let orientation = Orientation::from_number(rng.random_range(0..=1));
-        if let Some(orientation) = orientation {
-            return match orientation {
-                Orientation::VERTICAL => {
-                    let occupied = occupied_places.get(&Orientation::VERTICAL).unwrap();
-                    if !occupied.is_empty() {
-                        let options =
-                            Self::compliant_points(occupied, &orientation, &ship_size, board);
-                        if let Some(options) = options {
-                            let random_point = rng.random_range(0..options.len());
-                            return Ok((options[random_point].clone(), orientation));
-                        }
-                        Err(anyhow!(
-                            "There are no available spots on the board to place a ship of size {} Vertically.",
-                            &ship_size
-                        ))
-                    } else {
-                        if board_size.x - ship_size <= 0 || board_size.y == 0 {
-                            return Err(anyhow!("The Ship is to large to be placed on the board."))
-                        }
-                        let row = rng.random_range(0..board_size.x - ship_size);
-                        let column = rng.random_range(0..board_size.y);
-                        Ok((Point::new(row, column), orientation))
+        match orientation {
+            Orientation::VERTICAL => {
+                let occupied = occupied_places.get(&Orientation::VERTICAL).unwrap();
+                if !occupied.is_empty() {
+                    let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
+                    if let Some(options) = options {
+                        let random_point = rng.random_range(0..options.len());
+                        return Ok(options[random_point].clone());
                     }
-                }
-                Orientation::HORIZONTAL => {
-                    let occupied = occupied_places.get(&Orientation::HORIZONTAL).unwrap();
-                    if !occupied_places.is_empty() {
-                        let options =
-                            Self::compliant_points(occupied, &orientation, &ship_size, board);
-                        if let Some(options) = options {
-                            let random_point = rng.random_range(0..options.len());
-                            return Ok((options[random_point].clone(), orientation));
-                        }
-                        Err(anyhow!(
-                            "There are no available spots on the board to place a ship of size {} Horizontally.",
-                            &ship_size
-                        ))
-                    } else {
-                        if board_size.y - ship_size <= 0 || board_size.x == 0 {
-                            return Err(anyhow!("The Ship is to large to be placed on the board."))
-                        }
-                        let row = rng.random_range(0..board_size.x);
-                        let column = rng.random_range(0..board_size.y - ship_size);
-                        Ok((Point::new(row, column), orientation))
+                    Err(anyhow!(
+                        "There are no available spots on the board to place a ship of size {} Vertically.",
+                        &ship_size
+                    ))
+                } else {
+                    if board_size.x - ship_size <= 0 || board_size.y == 0 {
+                        return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
+                    let row = rng.random_range(0..board_size.x - ship_size);
+                    let column = rng.random_range(0..board_size.y);
+                    Ok(Point::new(row, column))
                 }
-            };
+            }
+            Orientation::HORIZONTAL => {
+                let occupied = occupied_places.get(&Orientation::HORIZONTAL).unwrap();
+                if !occupied_places.is_empty() {
+                    let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
+                    if let Some(options) = options {
+                        let random_point = rng.random_range(0..options.len());
+                        return Ok(options[random_point].clone());
+                    }
+                    Err(anyhow!(
+                        "There are no available spots on the board to place a ship of size {} Horizontally.",
+                        &ship_size
+                    ))
+                } else {
+                    if board_size.y - ship_size <= 0 || board_size.x == 0 {
+                        return Err(anyhow!("The Ship is to large to be placed on the board."));
+                    }
+                    let row = rng.random_range(0..board_size.x);
+                    let column = rng.random_range(0..board_size.y - ship_size);
+                    Ok(Point::new(row, column))
+                }
+            }
         }
-        Err(anyhow!(
-            "Failed to select a location. It would seem choosing the orientation failed."
-        ))
     }
 
     fn compliant_points(
