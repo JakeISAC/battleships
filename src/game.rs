@@ -55,7 +55,7 @@ impl Game {
         Self { board, ships }
     }
 
-    pub fn manual(board: &Board, ships: Vec<Ship>) -> Self {
+    pub fn manual(board: &Board, ships: &Vec<Ship>) -> Self {
         Self {
             board: board.clone(),
             ships: ships.clone()

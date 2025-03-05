@@ -194,6 +194,10 @@ impl Ship {
         }).collect()
     }
 
+    pub fn get_fields_status(&self) -> Vec<Status> {
+        self.fields.clone()
+    }
+
     pub fn get_position(&self) -> (Point, Point) {
         self.position.clone()
     }

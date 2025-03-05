@@ -21,7 +21,7 @@ pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
     }
 }
 
-pub(crate) fn board_with_colored_ships(
+pub fn board_with_colored_ships(
     board: &Board,
     ships: &Vec<Ship>,
     color: Color,
@@ -43,7 +43,7 @@ pub(crate) fn board_with_colored_ships(
     colored_board
 }
 
-pub(crate) fn color_specific_ship(
+pub fn color_specific_ship(
     ship_check: &Ship,
     board: &Board,
     ships: &Vec<Ship>,
@@ -73,7 +73,7 @@ pub(crate) fn color_specific_ship(
     colored_board
 }
 
-pub(crate) fn print_colored_matrix(matrix: Vec<Vec<ColoredString>>) {
+pub fn print_colored_matrix(matrix: Vec<Vec<ColoredString>>) {
     let y = matrix[0].len();
     print!("    ");
     for x in 0..y {

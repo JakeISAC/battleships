@@ -1,2 +1,2 @@
 pub mod manual_game;
-mod util;
+pub mod util;
