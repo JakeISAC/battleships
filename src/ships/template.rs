@@ -1,5 +1,5 @@
 use crate::board::Board;
-use crate::ship::{Orientation, Point, Ship};
+use crate::ships::ship::{Orientation, Point, Ship};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
 use rand::Rng;
@@ -7,28 +7,30 @@ use std::collections::{HashMap, HashSet};
 
 pub trait ShipTemplate {
     fn new(
+        &self,
         start: Point,
         orientation: Orientation,
         board: &mut Vec<Point>,
-        occupied_places: &HashMap<Orientation, Vec<Point>>,
-    ) -> Result<Ship>;
+        occupied_places: &HashSet<Point>,
+    ) -> Result<Ship> where Self: Sized;
     fn auto(
+        &self,
         board_size: &Board,
         board: &mut Vec<Point>,
-        occupied_places: &HashMap<Orientation, Vec<Point>>,
-    ) -> Result<Ship>;
+        occupied_places: &HashSet<Point>,
+    ) -> Result<Ship> where Self: Sized;
 
     fn select_random_position(
         ship_size: usize,
         orientation: &Orientation,
         board_size: &Board,
         board: &mut Vec<Point>,
-        occupied_places: &HashMap<Orientation, Vec<Point>>,
-    ) -> Result<Point> {
+        occupied_places: &HashSet<Point>,
+    ) -> Result<Point> where Self: Sized {
         let mut rng = rand::rng();
         match orientation {
             Orientation::VERTICAL => {
-                let occupied = occupied_places.get(&Orientation::VERTICAL).unwrap();
+                let occupied = occupied_places;
                 if !occupied.is_empty() {
                     let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
                     if let Some(options) = options {
@@ -40,17 +42,17 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.x - ship_size <= 0 || board_size.y == 0 {
+                    if board_size.get_x() - ship_size <= 0 || board_size.get_y() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.x - ship_size);
-                    let column = rng.random_range(0..board_size.y);
+                    let row = rng.random_range(0..board_size.get_x() - ship_size);
+                    let column = rng.random_range(0..board_size.get_y());
                     Ok(Point::new(row, column))
                 }
             }
             Orientation::HORIZONTAL => {
-                let occupied = occupied_places.get(&Orientation::HORIZONTAL).unwrap();
-                if !occupied_places.is_empty() {
+                let occupied = occupied_places;
+                if !occupied.is_empty() {
                     let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
                     if let Some(options) = options {
                         let random_point = rng.random_range(0..options.len());
@@ -61,11 +63,11 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.y - ship_size <= 0 || board_size.x == 0 {
+                    if board_size.get_y() - ship_size <= 0 || board_size.get_x() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.x);
-                    let column = rng.random_range(0..board_size.y - ship_size);
+                    let row = rng.random_range(0..board_size.get_x());
+                    let column = rng.random_range(0..board_size.get_y() - ship_size);
                     Ok(Point::new(row, column))
                 }
             }
@@ -73,15 +75,15 @@ pub trait ShipTemplate {
     }
 
     fn compliant_points(
-        occupied: &Vec<Point>,
+        occupied: &HashSet<Point>,
         orientation: &Orientation,
         ship_size: &usize,
         board: &mut Vec<Point>,
-    ) -> Option<Vec<Point>> {
+    ) -> Option<Vec<Point>> where Self: Sized {
         // filter out available positions
         board.retain(|x| !occupied.contains(x));
-        // create local tmp board
-        let tmp_board = board.clone();
+        // create local tmp board as hashset look up
+        let point_set: HashSet<&Point> = board.iter().collect();
         // return points that meet the criteria of orientation and ship size
         match orientation {
             Orientation::VERTICAL => {
@@ -90,15 +92,14 @@ pub trait ShipTemplate {
                 a point (x + ship_size, y)
                  */
                 let mut possible: Vec<Point> = Vec::new();
-                let point_set: HashSet<&Point> = tmp_board.iter().collect();
-                for point in &tmp_board {
+                for point in &point_set {
                     let target_point = Point {
                         x: point.x + ship_size - 1,
                         y: point.y,
                     };
 
                     if point_set.contains(&target_point) {
-                        possible.push(point.clone());
+                        possible.push(point.clone().clone());
                     }
                 }
 
@@ -113,15 +114,14 @@ pub trait ShipTemplate {
                 a point (x, y + ship_size)
                  */
                 let mut possible: Vec<Point> = Vec::new();
-                let point_set: HashSet<&Point> = tmp_board.iter().collect();
-                for point in &tmp_board {
+                for point in &point_set {
                     let target_point = Point {
                         x: point.x,
                         y: point.y + ship_size - 1,
                     };
 
                     if point_set.contains(&target_point) {
-                        possible.push(point.clone());
+                        possible.push(point.clone().clone());
                     }
                 }
 

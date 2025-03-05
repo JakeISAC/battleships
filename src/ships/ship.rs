@@ -1,29 +1,8 @@
-use crate::board::Board;
-use anyhow::{anyhow, Result};
+use crate::ships::ship_class::ShipClass;
+use anyhow::Result;
 use std::cmp::PartialEq;
 use std::fmt::{Display, Formatter};
 use std::ops::Not;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShipClass {
-    Destroyer,
-    Submarine,
-    Battleship,
-    PatrolBoat,
-    AircraftCarrier
-}
-
-impl Display for ShipClass {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ShipClass::Destroyer => write!(f, "Destroyer"),
-            ShipClass::Submarine => write!(f, "Submarine"),
-            ShipClass::Battleship => write!(f, "Battleship"),
-            ShipClass::PatrolBoat => write!(f, "Patrol Boat"),
-            ShipClass::AircraftCarrier => write!(f, "Aircraft Carrier")
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Orientation {
@@ -88,7 +67,7 @@ impl Point {
     }
 }
 
-// ship_templates can only be orientated horizontally or vertically
+// ships can only be orientated horizontally or vertically
 // if a ship is vertical always move down (so from up till down),
 // if horizontal always move right (so from left till right)
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -153,7 +132,7 @@ impl Ship {
         })
     }
 
-    pub fn hit(&mut self, hit_point: Point) -> bool {
+    pub fn try_hit(&mut self, hit_point: &Point) -> bool {
         // before hitting the ship needs to be zero
         match self.orientation {
             Orientation::HORIZONTAL => {
@@ -171,7 +150,7 @@ impl Ship {
 
                     // update if module was not HIT before
                     if let Some(index) = index {
-                        self.fields[index] = Status::HIT(hit_point);
+                        self.fields[index] = Status::HIT(hit_point.clone());
                         return true;
                     }
                 }
@@ -192,7 +171,7 @@ impl Ship {
 
                     // update if module was not HIT before
                     if let Some(index) = index {
-                        self.fields[index] = Status::HIT(hit_point);
+                        self.fields[index] = Status::HIT(hit_point.clone());
                         return true;
                     }
                 }

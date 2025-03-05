@@ -1,10 +1,11 @@
-use crate::ship::Point;
+use crate::ships::ship::Point;
 use itertools::Itertools;
 
+#[derive(Clone)]
 pub struct Board {
-    pub x: usize,
-    pub y: usize,
-    pub points: Vec<Point>,
+    x: usize,
+    y: usize,
+    points: Vec<Point>,
 }
 
 impl Board {
@@ -28,7 +29,23 @@ impl Board {
         board
     }
 
+    pub fn matrix_representation(&self) -> Vec<Vec<String>> {
+        let mut matrix: Vec<Vec<String>> = Vec::new();
+        for i in 0..self.x {
+            matrix.push(vec![".".to_string(); self.y])
+        }
+        matrix
+    }
+
     pub fn get_board(&self) -> Vec<Point> {
         self.points.clone()
+    }
+
+    pub fn get_x(&self) -> usize {
+        self.x.clone()
+    }
+
+    pub fn get_y(&self) -> usize {
+        self.y.clone()
     }
 }

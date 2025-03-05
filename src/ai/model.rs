@@ -1,4 +1,4 @@
-use crate::ship::{Orientation, Point};
+use crate::ships::ship::{Orientation, Point};
 
 pub(crate) trait Model {
     fn search() -> Option<Point>;

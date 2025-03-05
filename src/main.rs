@@ -1,57 +1,24 @@
-use crate::board::Board;
-use crate::ship::{Orientation, Point, Ship};
-use crate::ship_templates::carrier::Carrier;
-use crate::ship_templates::template::ShipTemplate;
-use chrono::Utc;
+use colored::Colorize;
+use crate::ships::template::ShipTemplate;
 use itertools::Itertools;
-use std::collections::HashMap;
-use crate::ship_templates::submarine::Submarine;
+use crate::board::Board;
+use crate::game::Game;
+use crate::ships::ship::{Orientation, Point, Ship};
+use crate::ships::ship_class::ShipClass;
+use crate::ui::manual_game::{get_board_size_io, get_ships_io};
 
 mod ai;
-mod board;
 mod communication;
-mod ship;
-mod ship_templates;
 mod game;
+mod ships;
+pub mod board;
+mod ui;
 
 fn main() {
-    let board_size = Board::new(3, 3);
-    let mut board = board_size.get_board();
-
-    let mut ships: Vec<Ship> = Vec::new();
-    let mut occupied: HashMap<Orientation, Vec<Point>> = vec![
-        (Orientation::HORIZONTAL, vec![]),
-        (Orientation::VERTICAL, vec![]),
-    ]
-    .iter()
-    .cloned()
-    .collect();
-    let time_start = Utc::now();
-    for _ in 0..6 {
-        let ship = Submarine::auto(&board_size, &mut board, &occupied);
-        match ship {
-            Ok(ship) => {
-                ships.push(ship.clone());
-                occupied
-                    .entry(ship.get_orientation())
-                    .or_insert_with(Vec::new)
-                    .extend(ship.get_fields());
-            }
-            Err(e) => {
-                println!("{}", e.to_string());
-                continue;
-            }
-        }
-    }
-    let time_end = Utc::now();
-    ships.iter().for_each(|x| println!("{}", x));
-    println!(
-        "Entire operation took {} seconds, for game board size {}x{}",
-        (time_end - time_start).num_seconds(),
-        board_size.x,
-        board_size.y
-    );
-
+    let board_size = get_board_size_io().unwrap();
+    let board = Board::new(board_size.0, board_size.1);
+    let ships = get_ships_io(&board);
+    println!("{:?}", ships);
     // let board = vec![vec![0; board_size.y]; board_size.x];
     // board.iter().for_each(|x| println!("{:?}", x));
 }
