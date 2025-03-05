@@ -168,7 +168,7 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
             std::io::stdin().read_line(&mut answer)?;
             let parsed_answer = sanitize_and_transform::<String>(&answer).unwrap_or(String::new());
             match parsed_answer.to_lowercase().as_str() {
-                "y" => {
+                "y" | "" => {
                     occupied.extend(ship.get_fields());
                     iterator += 1;
                     break;

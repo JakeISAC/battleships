@@ -1,9 +1,9 @@
 use crate::board::Board;
 use crate::ships::ship::{Orientation, Point, Ship};
 use crate::ships::template::ShipTemplate;
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use rand::Rng;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -12,9 +12,8 @@ pub enum ShipClass {
     Submarine,
     Battleship,
     PatrolBoat,
-    AircraftCarrier
+    AircraftCarrier,
 }
-
 
 impl ShipClass {
     pub fn size(&self) -> usize {
@@ -35,7 +34,7 @@ impl Display for ShipClass {
             ShipClass::Submarine => write!(f, "Submarine"),
             ShipClass::Battleship => write!(f, "Battleship"),
             ShipClass::PatrolBoat => write!(f, "Patrol Boat"),
-            ShipClass::AircraftCarrier => write!(f, "Aircraft Carrier")
+            ShipClass::AircraftCarrier => write!(f, "Aircraft Carrier"),
         }
     }
 }
@@ -50,10 +49,11 @@ impl ShipTemplate for ShipClass {
     ) -> Result<Ship> {
         let occupied = occupied_places;
         if !occupied.is_empty() {
-            let points = Self::compliant_points(occupied, &orientation, &self.size(), board);
-            if let Some(points) = points {
-                if points.contains(&start) {
-                    return Ship::new(self.clone(), self.size(), start, orientation);
+            let ship = Ship::new(self.clone(), self.size(), start, orientation);
+            if let Ok(ship_unwrap) = &ship {
+                let ship_modules = ship_unwrap.get_fields();
+                if ship_modules.iter().all(|x| board.contains(x)) {
+                    return ship;
                 }
             }
             Err(anyhow!("Chosen point is not available."))

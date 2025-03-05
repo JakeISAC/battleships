@@ -3,7 +3,7 @@ use crate::ships::ship::{Orientation, Point, Ship};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
 use rand::Rng;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 pub trait ShipTemplate {
     fn new(
@@ -12,13 +12,17 @@ pub trait ShipTemplate {
         orientation: Orientation,
         board: &mut Vec<Point>,
         occupied_places: &HashSet<Point>,
-    ) -> Result<Ship> where Self: Sized;
+    ) -> Result<Ship>
+    where
+        Self: Sized;
     fn auto(
         &self,
         board_size: &Board,
         board: &mut Vec<Point>,
         occupied_places: &HashSet<Point>,
-    ) -> Result<Ship> where Self: Sized;
+    ) -> Result<Ship>
+    where
+        Self: Sized;
 
     fn select_random_position(
         ship_size: usize,
@@ -26,7 +30,10 @@ pub trait ShipTemplate {
         board_size: &Board,
         board: &mut Vec<Point>,
         occupied_places: &HashSet<Point>,
-    ) -> Result<Point> where Self: Sized {
+    ) -> Result<Point>
+    where
+        Self: Sized,
+    {
         let mut rng = rand::rng();
         match orientation {
             Orientation::VERTICAL => {
@@ -34,8 +41,21 @@ pub trait ShipTemplate {
                 if !occupied.is_empty() {
                     let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
                     if let Some(options) = options {
-                        let random_point = rng.random_range(0..options.len());
-                        return Ok(options[random_point].clone());
+                        let mut options = options.clone();
+                        let mut random_point = rng.random_range(0..options.len());
+                        while !options.is_empty() {
+                            random_point = rng.random_range(0..options.len());
+                            let chosen = options[random_point].clone();
+                            let mut modules: Vec<Point> = Vec::new();
+                            for i in 0..=ship_size {
+                                modules.push(Point::new(chosen.x + i, chosen.y));
+                            }
+                            if modules.iter().all(|x| board.contains(x)) {
+                                return Ok(options[random_point].clone());
+                            }
+                            options.remove(random_point);
+                        }
+                        return Err(anyhow!("No viable option for placing this ship Vertically was found."))
                     }
                     Err(anyhow!(
                         "There are no available spots on the board to place a ship of size {} Vertically.",
@@ -55,8 +75,21 @@ pub trait ShipTemplate {
                 if !occupied.is_empty() {
                     let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
                     if let Some(options) = options {
-                        let random_point = rng.random_range(0..options.len());
-                        return Ok(options[random_point].clone());
+                        let mut options = options.clone();
+                        let mut random_point = rng.random_range(0..options.len());
+                        while !options.is_empty() {
+                            random_point = rng.random_range(0..options.len());
+                            let chosen = options[random_point].clone();
+                            let mut modules: Vec<Point> = Vec::new();
+                            for i in 0..=ship_size {
+                                modules.push(Point::new(chosen.x, chosen.y + i));
+                            }
+                            if modules.iter().all(|x| board.contains(x)) {
+                                return Ok(options[random_point].clone());
+                            }
+                            options.remove(random_point);
+                        }
+                        return Err(anyhow!("No viable option for placing this ship Horizontally was found."))
                     }
                     Err(anyhow!(
                         "There are no available spots on the board to place a ship of size {} Horizontally.",
@@ -79,7 +112,10 @@ pub trait ShipTemplate {
         orientation: &Orientation,
         ship_size: &usize,
         board: &mut Vec<Point>,
-    ) -> Option<Vec<Point>> where Self: Sized {
+    ) -> Option<Vec<Point>>
+    where
+        Self: Sized,
+    {
         // filter out available positions
         board.retain(|x| !occupied.contains(x));
         // create local tmp board as hashset look up
