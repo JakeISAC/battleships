@@ -1,14 +1,14 @@
 use crate::board::Board;
+use crate::game::Game;
 use crate::ships::ship::Ship;
 use anyhow::{anyhow, Result};
 use colored::{Color, ColoredString, Colorize};
 use regex::Regex;
 use std::any::type_name;
 use std::str::FromStr;
-use crate::game::Game;
 
 pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
-    let mut input = input.to_string();
+    let input = input.to_string();
     let text = input.trim();
     let re = Regex::new(r"\s+")?;
     let result = re.replace_all(text, " ");
@@ -22,10 +22,7 @@ pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
     }
 }
 
-pub fn matrix_with_colored_ships(
-    board: &Board,
-    ships: &Vec<Ship>,
-) -> Vec<Vec<ColoredString>> {
+pub fn matrix_with_colored_ships(board: &Board, ships: &Vec<Ship>) -> Vec<Vec<ColoredString>> {
     let mut colored_board: Vec<Vec<ColoredString>> = board
         .matrix_representation()
         .iter()

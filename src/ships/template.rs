@@ -39,7 +39,8 @@ pub trait ShipTemplate {
             Orientation::VERTICAL => {
                 let occupied = occupied_places;
                 if !occupied.is_empty() {
-                    let compliant_points = Self::compliant_points(occupied, &orientation, &ship_size, board);
+                    let compliant_points =
+                        Self::compliant_points(occupied, &orientation, &ship_size, board);
                     if let Some(options) = compliant_points {
                         let mut options = options.clone();
                         let mut random_point = rng.random_range(0..options.len());
@@ -55,7 +56,9 @@ pub trait ShipTemplate {
                             }
                             options.remove(random_point);
                         }
-                        return Err(anyhow!("No viable option for placing this ship Vertically was found."))
+                        return Err(anyhow!(
+                            "No viable option for placing this ship Vertically was found."
+                        ));
                     }
                     Err(anyhow!(
                         "There are no available spots on the board to place a ship of size {} Vertically.",
@@ -89,7 +92,9 @@ pub trait ShipTemplate {
                             }
                             options.remove(random_point);
                         }
-                        return Err(anyhow!("No viable option for placing this ship Horizontally was found."))
+                        return Err(anyhow!(
+                            "No viable option for placing this ship Horizontally was found."
+                        ));
                     }
                     Err(anyhow!(
                         "There are no available spots on the board to place a ship of size {} Horizontally.",

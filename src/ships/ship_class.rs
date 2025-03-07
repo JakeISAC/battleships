@@ -2,10 +2,10 @@ use crate::board::Board;
 use crate::ships::ship::{Orientation, Point, Ship};
 use crate::ships::template::ShipTemplate;
 use anyhow::{anyhow, Result};
+use colored::Color;
 use rand::Rng;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
-use colored::Color;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShipClass {

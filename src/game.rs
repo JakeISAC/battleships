@@ -1,11 +1,11 @@
 use crate::board::Board;
-use crate::ships::ship::{Orientation, Point, Ship};
+use crate::ships::ship::{Point, Ship};
 use crate::ships::ship_class::ShipClass;
 use crate::ships::ship_class::ShipClass::{
     AircraftCarrier, Battleship, Destroyer, PatrolBoat, Submarine,
 };
 use crate::ships::template::ShipTemplate;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fmt::Display;
 
 const SHIPS: [ShipClass; 15] = [
@@ -58,7 +58,7 @@ impl Game {
     pub fn manual(board: &Board, ships: &Vec<Ship>) -> Self {
         Self {
             board: board.clone(),
-            ships: ships.clone()
+            ships: ships.clone(),
         }
     }
 

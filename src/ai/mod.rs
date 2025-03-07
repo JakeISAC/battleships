@@ -1,2 +1,2 @@
-mod model;
 mod ai;
+mod model;

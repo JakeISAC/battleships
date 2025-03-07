@@ -1,5 +1,5 @@
 use crate::ships::ship_class::ShipClass;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::cmp::PartialEq;
 use std::fmt::{Display, Formatter};
 use std::ops::Not;
@@ -20,7 +20,6 @@ impl Orientation {
         }
     }
 }
-
 
 impl FromStr for Orientation {
     type Err = &'static str;
@@ -135,7 +134,7 @@ impl Ship {
                     }
 
                     (start, end)
-                },
+                }
             }
         };
         Ok(Self {

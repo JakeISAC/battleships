@@ -128,19 +128,26 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
         let parsed = match try_parsed {
             Ok(res) => res,
             Err(e) => {
-                println!("{}", "Your input failed to parse properly.".color(Color::BrightRed));
+                println!(
+                    "{}",
+                    "Your input failed to parse properly.".color(Color::BrightRed)
+                );
                 errors.push(e.to_string());
                 println!("{}", format!("{:?}", errors).red());
-                println!("{}", "Please press enter when ready to continue.".color(Color::BrightRed));
+                println!(
+                    "{}",
+                    "Please press enter when ready to continue.".color(Color::BrightRed)
+                );
                 let mut answer: String = String::new();
                 std::io::stdin().read_line(&mut answer)?;
                 continue;
             }
         };
-        let orientation: Orientation = sanitize_and_transform::<Orientation>(&parsed[0]).unwrap_or_else(|e| {
-            errors.push(e.to_string());
-            Orientation::VERTICAL
-        });
+        let orientation: Orientation = sanitize_and_transform::<Orientation>(&parsed[0])
+            .unwrap_or_else(|e| {
+                errors.push(e.to_string());
+                Orientation::VERTICAL
+            });
 
         let x: usize = sanitize_and_transform::<usize>(&parsed[1]).unwrap_or_else(|e| {
             errors.push(e.to_string());
@@ -153,21 +160,31 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
         });
 
         if !errors.is_empty() {
-            println!("{}", "Failed to create a new Ship. Try again!".color(Color::BrightRed));
+            println!(
+                "{}",
+                "Failed to create a new Ship. Try again!".color(Color::BrightRed)
+            );
             println!("{}", format!("{:?}", errors).red());
-            println!("{}", "Please press enter when ready to continue.".color(Color::BrightRed));
+            println!(
+                "{}",
+                "Please press enter when ready to continue.".color(Color::BrightRed)
+            );
             let mut answer: String = String::new();
             std::io::stdin().read_line(&mut answer)?;
             continue;
         }
 
-        let ship = match ship_class.new(Point::new(x, y), orientation, &mut board_points, &occupied) {
+        let ship = match ship_class.new(Point::new(x, y), orientation, &mut board_points, &occupied)
+        {
             Ok(ship) => ship,
             Err(e) => {
                 println!("{}", "Ship could not be created.".color(Color::BrightRed));
                 errors.push(e.to_string());
                 println!("{}", format!("{:?}", errors).red());
-                println!("{}", "Please press enter when ready to continue.".color(Color::BrightRed));
+                println!(
+                    "{}",
+                    "Please press enter when ready to continue.".color(Color::BrightRed)
+                );
                 let mut answer: String = String::new();
                 std::io::stdin().read_line(&mut answer)?;
                 continue;
@@ -198,7 +215,10 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
             }
         }
     }
-    println!("{}", "All ships have been placed. Please press enter to continue.".white());
+    println!(
+        "{}",
+        "All ships have been placed. Please press enter to continue.".white()
+    );
     println!("{}", "Please press enter when ready to continue.".white());
     let mut answer: String = String::new();
     std::io::stdin().read_line(&mut answer)?;

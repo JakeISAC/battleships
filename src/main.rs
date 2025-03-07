@@ -48,7 +48,7 @@ fn main() {
     let mut board_representation = board.get_board();
     let mut occupied: HashSet<Point> = HashSet::new();
     let start_time = chrono::Utc::now();
-    for _ in 0..100 {
+    for _ in 0..1 {
         for ship in SHIPS {
             let possible_ship = ship.auto(&board, &mut board_representation, &occupied);
             match possible_ship {
@@ -68,5 +68,5 @@ fn main() {
         board.get_x(),
         board.get_y(),
     );
-   // print_colored_matrix(matrix_with_colored_ships(&board, &ships));
+     print_colored_matrix(matrix_with_colored_ships(&board, &ships));
 }
