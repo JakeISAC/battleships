@@ -1,11 +1,15 @@
 use crate::board::Board;
-use crate::game::Game;
-use crate::ships::ship::Point;
+use crate::ships::ship::{Point, Ship};
+use crate::ships::ship_class::ShipClass;
+use crate::ships::ship_class::ShipClass::{
+    AircraftCarrier, Battleship, Destroyer, PatrolBoat, Submarine,
+};
 use crate::ships::template::ShipTemplate;
-use crate::ui::manual_game::{get_board_size_io, get_ships_io};
-use crate::ui::util::{board_with_colored_ships, print_colored_matrix};
-use colored::{Color, Colorize};
+use crate::ui::manual_game::get_board_size_io;
+use colored::Colorize;
 use itertools::Itertools;
+use std::collections::HashSet;
+use crate::ui::util::{matrix_with_colored_ships, print_colored_matrix};
 
 mod ai;
 pub mod board;
@@ -15,16 +19,54 @@ mod ships;
 mod ui;
 
 fn main() {
-    let board_size = get_board_size_io().unwrap();
-    let board = Board::new(board_size.0, board_size.1);
-    let ships = get_ships_io(&board);
-    if let Ok(ships) = ships {
-        let mut game = Game::manual(&board, &ships);
-        game.hit(&Point::new(0, 1));
-        game.hit(&Point::new(0, 2));
-        game.hit(&Point::new(3, 5));
-        print_colored_matrix(board_with_colored_ships(&game.get_board(), &ships, Color::Blue));
+    let (width, height) = get_board_size_io().unwrap();
+    let board = Board::new(width, height);
+    // let ships = get_ships_io(&board).unwrap();
+    // let game = Game::manual(&board, &ships);
+    // let game = Game::auto(width, height);
+    // print_game(&game);
+
+    const SHIPS: [ShipClass; 15] = [
+        AircraftCarrier,
+        Battleship,
+        Battleship,
+        Destroyer,
+        Destroyer,
+        Destroyer,
+        Submarine,
+        Submarine,
+        Submarine,
+        Submarine,
+        PatrolBoat,
+        PatrolBoat,
+        PatrolBoat,
+        PatrolBoat,
+        PatrolBoat,
+    ];
+
+    let mut ships: Vec<Ship> = Vec::new();
+    let mut board_representation = board.get_board();
+    let mut occupied: HashSet<Point> = HashSet::new();
+    let start_time = chrono::Utc::now();
+    for _ in 0..100 {
+        for ship in SHIPS {
+            let possible_ship = ship.auto(&board, &mut board_representation, &occupied);
+            match possible_ship {
+                Ok(ship) => {
+                    occupied.extend(ship.get_fields());
+                    ships.push(ship);
+                }
+                Err(e) => eprintln!("{}", e),
+            }
+        }
     }
-    // let board = vec![vec![0; board_size.y]; board_size.x];
-    // board.iter().for_each(|x| println!("{:?}", x));
+    let end_time = chrono::Utc::now();
+    println!(
+        "It took {} seconds to successfully allocate {} ships on board {}x{}",
+        (end_time - start_time).num_seconds(),
+        ships.len(),
+        board.get_x(),
+        board.get_y(),
+    );
+   // print_colored_matrix(matrix_with_colored_ships(&board, &ships));
 }

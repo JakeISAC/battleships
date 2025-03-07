@@ -5,6 +5,7 @@ use anyhow::{anyhow, Result};
 use rand::Rng;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
+use colored::Color;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShipClass {
@@ -23,6 +24,16 @@ impl ShipClass {
             ShipClass::Battleship => 4,
             ShipClass::PatrolBoat => 2,
             ShipClass::AircraftCarrier => 5,
+        }
+    }
+
+    pub fn color(&self) -> Color {
+        match self {
+            ShipClass::Destroyer => Color::Blue,
+            ShipClass::Submarine => Color::Red,
+            ShipClass::Battleship => Color::Green,
+            ShipClass::PatrolBoat => Color::Yellow,
+            ShipClass::AircraftCarrier => Color::Magenta,
         }
     }
 }
@@ -47,13 +58,14 @@ impl ShipTemplate for ShipClass {
         board: &mut Vec<Point>,
         occupied_places: &HashSet<Point>,
     ) -> Result<Ship> {
-        let occupied = occupied_places;
-        if !occupied.is_empty() {
-            let ship = Ship::new(self.clone(), self.size(), start, orientation);
-            if let Ok(ship_unwrap) = &ship {
-                let ship_modules = ship_unwrap.get_fields();
+        if !occupied_places.is_empty() {
+            // filter out available positions
+            board.retain(|x| !occupied_places.contains(x));
+            let try_ship = Ship::new(self.clone(), self.size(), start, orientation);
+            if let Ok(ship) = &try_ship {
+                let ship_modules = ship.get_fields();
                 if ship_modules.iter().all(|x| board.contains(x)) {
-                    return ship;
+                    return try_ship;
                 }
             }
             Err(anyhow!("Chosen point is not available."))

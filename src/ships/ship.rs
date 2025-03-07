@@ -1,8 +1,9 @@
 use crate::ships::ship_class::ShipClass;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::cmp::PartialEq;
 use std::fmt::{Display, Formatter};
 use std::ops::Not;
+use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Orientation {
@@ -15,7 +16,20 @@ impl Orientation {
         match number {
             0 => Some(Orientation::VERTICAL),
             1 => Some(Orientation::HORIZONTAL),
-            _ => None
+            _ => None,
+        }
+    }
+}
+
+
+impl FromStr for Orientation {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "v" => Ok(Orientation::VERTICAL),
+            "h" => Ok(Orientation::HORIZONTAL),
+            _ => Err("Failed to parse Orientation."),
         }
     }
 }
@@ -26,7 +40,7 @@ impl Not for Orientation {
     fn not(self) -> Self::Output {
         match self {
             Orientation::VERTICAL => Orientation::HORIZONTAL,
-            Orientation::HORIZONTAL => Orientation::VERTICAL
+            Orientation::HORIZONTAL => Orientation::VERTICAL,
         }
     }
 }
@@ -121,7 +135,7 @@ impl Ship {
                     }
 
                     (start, end)
-                }
+                },
             }
         };
         Ok(Self {
@@ -138,7 +152,8 @@ impl Ship {
             Orientation::HORIZONTAL => {
                 if hit_point.x == self.position.0.x
                     && hit_point.y >= self.position.0.y // start
-                    && hit_point.y <= self.position.1.y // end
+                    && hit_point.y <= self.position.1.y
+                // end
                 {
                     // find the position of the hit in the ship 'structure' array
                     let index = self.fields.iter().position(|x| {
@@ -159,7 +174,8 @@ impl Ship {
             Orientation::VERTICAL => {
                 if hit_point.y == self.position.0.y
                     && hit_point.x >= self.position.0.x // start
-                    && hit_point.x <= self.position.1.x // end
+                    && hit_point.x <= self.position.1.x
+                // end
                 {
                     // find the position of the hit in the ship 'structure' array
                     let index = self.fields.iter().position(|x| {
@@ -189,9 +205,13 @@ impl Ship {
     }
 
     pub fn get_fields(&self) -> Vec<Point> {
-        self.fields.clone().iter().filter_map(|status| match status {
-            Status::HIT(point) |  Status::OK(point) => Some(point.clone()),
-        }).collect()
+        self.fields
+            .clone()
+            .iter()
+            .filter_map(|status| match status {
+                Status::HIT(point) | Status::OK(point) => Some(point.clone()),
+            })
+            .collect()
     }
 
     pub fn get_fields_status(&self) -> Vec<Status> {

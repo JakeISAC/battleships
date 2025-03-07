@@ -5,6 +5,7 @@ use colored::{Color, ColoredString, Colorize};
 use regex::Regex;
 use std::any::type_name;
 use std::str::FromStr;
+use crate::game::Game;
 
 pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
     let mut input = input.to_string();
@@ -21,10 +22,9 @@ pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
     }
 }
 
-pub fn board_with_colored_ships(
+pub fn matrix_with_colored_ships(
     board: &Board,
     ships: &Vec<Ship>,
-    color: Color,
 ) -> Vec<Vec<ColoredString>> {
     let mut colored_board: Vec<Vec<ColoredString>> = board
         .matrix_representation()
@@ -38,7 +38,7 @@ pub fn board_with_colored_ships(
         let modules = ship.get_fields();
         modules
             .iter()
-            .for_each(|x| colored_board[x.x][x.y] = "*".color(color));
+            .for_each(|x| colored_board[x.x][x.y] = "*".color(ship.get_class().color()));
     }
     colored_board
 }
@@ -91,3 +91,6 @@ pub fn print_colored_matrix(matrix: Vec<Vec<ColoredString>>) {
     }
 }
 
+pub fn print_game(game: &Game) {
+    print_colored_matrix(matrix_with_colored_ships(&game.board, &game.ships));
+}

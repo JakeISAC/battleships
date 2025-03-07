@@ -39,8 +39,8 @@ pub trait ShipTemplate {
             Orientation::VERTICAL => {
                 let occupied = occupied_places;
                 if !occupied.is_empty() {
-                    let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
-                    if let Some(options) = options {
+                    let compliant_points = Self::compliant_points(occupied, &orientation, &ship_size, board);
+                    if let Some(options) = compliant_points {
                         let mut options = options.clone();
                         let mut random_point = rng.random_range(0..options.len());
                         while !options.is_empty() {

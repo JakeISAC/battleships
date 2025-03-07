@@ -27,8 +27,8 @@ const SHIPS: [ShipClass; 15] = [
 ];
 
 pub struct Game {
-    board: Board,
-    ships: Vec<Ship>,
+    pub board: Board,
+    pub ships: Vec<Ship>,
 }
 
 impl Game {
