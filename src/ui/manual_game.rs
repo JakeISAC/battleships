@@ -38,6 +38,7 @@ type Height = usize;
 pub fn get_board_size_io() -> Result<(Width, Height)> {
     loop {
         let mut errors: Vec<String> = Vec::new();
+
         println!("Please enter width of the board:");
         let mut width: String = String::new();
         std::io::stdin().read_line(&mut width)?;
@@ -70,6 +71,7 @@ pub fn get_board_size_io() -> Result<(Width, Height)> {
         let parsed_answer = sanitize_and_transform::<String>(&answer).unwrap_or(String::new());
         match parsed_answer.to_lowercase().as_str() {
             "y" | "" => {
+                Command::new("clear").status()?;
                 return Ok((numeric_width, numeric_height));
             }
             _ => {
@@ -95,14 +97,14 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
     let mut answer: String = String::new();
     std::io::stdin().read_line(&mut answer)?;
 
-    let mut board_vector = board.get_board();
+    let mut board_points = board.get_board();
     let mut occupied: HashSet<Point> = HashSet::new();
-    let mut errors: Vec<String> = Vec::new();
     let mut iterator = 0usize;
     let mut ships: Vec<Ship> = Vec::new();
     while iterator != SHIPS.len() - 1 {
         Command::new("clear").status()?;
-        errors.clear();
+
+        let mut errors: Vec<String> = Vec::new();
 
         let ship_class = SHIPS[iterator].clone();
         print_colored_matrix(matrix_with_colored_ships(&board, &ships));
@@ -159,9 +161,7 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
             continue;
         }
 
-        let start = Point::new(x, y);
-
-        let ship = match ship_class.new(start, orientation, &mut board_vector, &occupied) {
+        let ship = match ship_class.new(Point::new(x, y), orientation, &mut board_points, &occupied) {
             Ok(ship) => ship,
             Err(e) => {
                 println!("{}", "Ship could not be created.".color(Color::BrightRed));
