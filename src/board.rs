@@ -3,17 +3,17 @@ use itertools::Itertools;
 
 #[derive(Clone)]
 pub struct Board {
-    x: usize,
-    y: usize,
+    width: usize,
+    height: usize,
     points: Vec<Point>,
 }
 
 impl Board {
-    pub fn new(x: usize, y: usize) -> Self {
+    pub fn new(width: usize, height: usize) -> Self {
         Self {
-            x,
-            y,
-            points: Self::generate_board(x, y),
+            width,
+            height,
+            points: Self::generate_board(width, height),
         }
     }
 
@@ -31,8 +31,8 @@ impl Board {
 
     pub fn matrix_representation(&self) -> Vec<Vec<String>> {
         let mut matrix: Vec<Vec<String>> = Vec::new();
-        for _ in 0..self.x {
-            matrix.push(vec![".".to_string(); self.y])
+        for _ in 0..self.width {
+            matrix.push(vec![".".to_string(); self.height])
         }
         matrix
     }
@@ -41,11 +41,11 @@ impl Board {
         self.points.clone()
     }
 
-    pub fn get_x(&self) -> usize {
-        self.x.clone()
+    pub fn get_width(&self) -> usize {
+        self.width.clone()
     }
 
-    pub fn get_y(&self) -> usize {
-        self.y.clone()
+    pub fn get_height(&self) -> usize {
+        self.height.clone()
     }
 }

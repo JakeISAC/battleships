@@ -6,6 +6,7 @@ use colored::Color;
 use rand::Rng;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
+use rayon::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShipClass {
@@ -64,7 +65,7 @@ impl ShipTemplate for ShipClass {
             let try_ship = Ship::new(self.clone(), self.size(), start, orientation);
             if let Ok(ship) = &try_ship {
                 let ship_modules = ship.get_fields();
-                if ship_modules.iter().all(|x| board.contains(x)) {
+                if ship_modules.par_iter().all(|x| board.contains(x)) {
                     return try_ship;
                 }
             }

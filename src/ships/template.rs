@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 use itertools::Itertools;
 use rand::Rng;
 use std::collections::HashSet;
+use rayon::prelude::*;
 
 pub trait ShipTemplate {
     fn new(
@@ -51,7 +52,7 @@ pub trait ShipTemplate {
                             for i in 0..=ship_size {
                                 modules.push(Point::new(chosen.x + i, chosen.y));
                             }
-                            if modules.iter().all(|x| board.contains(x)) {
+                            if modules.par_iter().all(|x| board.contains(x)) {
                                 return Ok(options[random_point].clone());
                             }
                             options.remove(random_point);
@@ -65,11 +66,11 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.get_x() - ship_size <= 0 || board_size.get_y() == 0 {
+                    if board_size.get_width() - ship_size <= 0 || board_size.get_height() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.get_x() - ship_size);
-                    let column = rng.random_range(0..board_size.get_y());
+                    let row = rng.random_range(0..board_size.get_width() - ship_size);
+                    let column = rng.random_range(0..board_size.get_height());
                     Ok(Point::new(row, column))
                 }
             }
@@ -87,7 +88,7 @@ pub trait ShipTemplate {
                             for i in 0..=ship_size {
                                 modules.push(Point::new(chosen.x, chosen.y + i));
                             }
-                            if modules.iter().all(|x| board.contains(x)) {
+                            if modules.par_iter().all(|x| board.contains(x)) {
                                 return Ok(options[random_point].clone());
                             }
                             options.remove(random_point);
@@ -101,11 +102,11 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.get_y() - ship_size <= 0 || board_size.get_x() == 0 {
+                    if board_size.get_height() - ship_size <= 0 || board_size.get_width() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.get_x());
-                    let column = rng.random_range(0..board_size.get_y() - ship_size);
+                    let row = rng.random_range(0..board_size.get_width());
+                    let column = rng.random_range(0..board_size.get_height() - ship_size);
                     Ok(Point::new(row, column))
                 }
             }
@@ -124,7 +125,7 @@ pub trait ShipTemplate {
         // filter out available positions
         board.retain(|x| !occupied.contains(x));
         // create local tmp board as hashset look up
-        let point_set: HashSet<&Point> = board.iter().collect();
+        let point_set: HashSet<&Point> = board.par_iter().collect();
         // return points that meet the criteria of orientation and ship size
         match orientation {
             Orientation::VERTICAL => {
@@ -132,17 +133,20 @@ pub trait ShipTemplate {
                 Board contains at least two points, where if there is a point (x, y) there also needs to be
                 a point (x + ship_size, y)
                  */
-                let mut possible: Vec<Point> = Vec::new();
-                for point in &point_set {
+                let possible: Vec<Point> = point_set.par_iter().filter_map(|point| {
                     let target_point = Point {
                         x: point.x + ship_size - 1,
                         y: point.y,
                     };
 
                     if point_set.contains(&target_point) {
-                        possible.push(point.clone().clone());
+                        Some(point.clone())
+                    } else {
+                        None
                     }
-                }
+                })
+                    .map(|x| x.clone())
+                    .collect();
 
                 if possible.is_empty() {
                     return None;
@@ -154,17 +158,20 @@ pub trait ShipTemplate {
                 Board contains at least two points, where if there is a point (x, y) there also needs to be
                 a point (x, y + ship_size)
                  */
-                let mut possible: Vec<Point> = Vec::new();
-                for point in &point_set {
+                let mut possible: Vec<Point> = point_set.par_iter().filter_map(|point| {
                     let target_point = Point {
                         x: point.x,
                         y: point.y + ship_size - 1,
                     };
 
                     if point_set.contains(&target_point) {
-                        possible.push(point.clone().clone());
+                        Some(point.clone())
+                    } else {
+                        None
                     }
-                }
+                })
+                    .map(|x| x.clone())
+                    .collect();
 
                 if possible.is_empty() {
                     return None;

@@ -7,6 +7,7 @@ use crate::ships::ship_class::ShipClass::{
 use crate::ships::template::ShipTemplate;
 use std::collections::HashSet;
 use std::fmt::Display;
+use rayon::prelude::*;
 
 const SHIPS: [ShipClass; 15] = [
     AircraftCarrier,
@@ -26,9 +27,10 @@ const SHIPS: [ShipClass; 15] = [
     PatrolBoat,
 ];
 
+#[derive(Clone)]
 pub struct Game {
-    pub board: Board,
-    pub ships: Vec<Ship>,
+    board: Board,
+    ships: Vec<Ship>,
 }
 
 impl Game {
@@ -42,7 +44,7 @@ impl Game {
             let ship = x.auto(&board, &mut board_representation, &occupied);
             match ship {
                 Ok(ship) => {
-                    occupied.extend(ship.get_fields());
+                    occupied.par_extend(ship.get_fields());
                     ships.push(ship);
                 }
                 Err(e) => {
