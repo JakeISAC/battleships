@@ -1,2 +1,3 @@
 pub mod parser;
-mod protocol_commands;
+pub mod protocol_commands;
+mod sanitize;

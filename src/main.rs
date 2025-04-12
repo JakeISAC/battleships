@@ -1,18 +1,15 @@
-use std::collections::HashSet;
-use std::fs::File;
-use crate::board::Board;
-use crate::game::game::Game;
+use std::collections::{HashSet, VecDeque};
 use crate::ships::template::ShipTemplate;
-use crate::ui::manual_game::{get_board_size_io, get_ships_io};
 use colored::Colorize;
 use itertools::Itertools;
 use rayon::prelude::{IntoParallelIterator, ParallelExtend};
-use crate::protocol::parser::parse;
-use crate::ships::ship::{Point, Ship};
-use crate::ships::ship_class::ShipClass;
-use crate::ships::ship_class::ShipClass::{AircraftCarrier, Battleship, Destroyer, PatrolBoat, Submarine};
-use crate::ui::util::print_game;
 use std::io::Write;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
+use crate::network::game_link::game_handler;
+use crate::protocol::protocol_commands::Command;
 
 mod ai;
 pub mod board;
@@ -20,56 +17,23 @@ mod game;
 mod ships;
 mod ui;
 mod protocol;
+mod network;
 
-fn main() {
-    let mut output = File::create("result.txt").expect("Failed");
+use anyhow::Result;
 
-    let (width, height) = get_board_size_io().unwrap();
-    let board = Board::new(width, height);
+fn main() -> Result<()> {
+    let port = 1332;
+    let mut queue = Arc::new(Mutex::new(VecDeque::new()));
+    let mut threaded_queue = Arc::clone(&queue);
+    thread::spawn(move || {
+        let _ = game_handler(port, &mut threaded_queue);
+    });
 
-    let SHIPS: [ShipClass; 15] = [
-        AircraftCarrier,
-        Battleship,
-        Battleship,
-        Destroyer,
-        Destroyer,
-        Destroyer,
-        Submarine,
-        Submarine,
-        Submarine,
-        Submarine,
-        PatrolBoat,
-        PatrolBoat,
-        PatrolBoat,
-        PatrolBoat,
-        PatrolBoat,
-    ];
-
-    let mut ships: Vec<Ship> = Vec::new();
-    let mut board_representation = board.get_board();
-    let mut occupied: HashSet<Point> = HashSet::new();
-    let start_time = chrono::Utc::now();
-    for _ in 0..150 {
-        for ship in &SHIPS {
-            let possible_ship = ship.auto(&board, &mut board_representation, &occupied);
-            match possible_ship {
-                Ok(ship) => {
-                    occupied.par_extend(ship.get_fields());
-                    ships.push(ship);
-                }
-                Err(e) => eprintln!("{}", e),
-            }
-        }
+    loop {
+        queue.lock().unwrap().iter().for_each(|x| println!("{}", x.to_string()));
+        sleep(Duration::from_secs(2));
     }
-    let end_time = chrono::Utc::now();
-    let line = format!(
-        "It took {} seconds to successfully allocate {} ships on board {}x{}",
-        (end_time - start_time).num_seconds(),
-        ships.len(),
-        board.get_width(),
-        board.get_height(),
-    ).to_string();
 
-    write!(output, "{}", line).expect("TODO: panic message");
+    Ok(())
 }
 

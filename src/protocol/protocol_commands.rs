@@ -1,6 +1,6 @@
-use std::any::Any;
+use as_any::{AsAny, Downcast};
 
-pub trait Command {
+pub trait Command: AsAny + Send {
     fn to_string(&self) -> String;
 }
 
@@ -67,17 +67,17 @@ impl Command for Requests {
 */
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Responses<'a> {
+pub enum Responses {
     ResponseCoordinate(usize, usize),
     ResponseCoordinateList(Vec<(usize, usize)>),
-    ResponseGameLost(&'a str),
-    ResponseHit(&'a str, Option<&'a str>),
-    ResponseUserName(&'a str),
-    ResponseSetUp(&'a str),
+    ResponseGameLost(String),
+    ResponseHit(String, Option<String>),
+    ResponseUserName(String),
+    ResponseSetUp(String),
     ResponseNull,
 }
 
-impl Command for Responses<'_> {
+impl Command for Responses {
     fn to_string(&self) -> String {
         match self {
             Responses::ResponseCoordinate(x, y) => format!("C:{};{}", x, y),

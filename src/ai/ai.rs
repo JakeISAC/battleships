@@ -21,15 +21,15 @@ impl AiAgent {
 }
 
 impl Model for AiAgent {
-    fn search() -> Option<Point> {
+    fn search(&self) -> Option<Point> {
         todo!()
     }
 
-    fn triangulation(initial_point: Point) -> Orientation {
+    fn triangulation(&self, initial_point: Point) -> Orientation {
         todo!()
     }
 
-    fn attack(initial_point: Point, hit_points: Vec<Point>) {
+    fn attack(&self, initial_point: Point, hit_points: Vec<Point>) {
         todo!()
     }
 }

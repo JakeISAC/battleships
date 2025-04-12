@@ -2,7 +2,6 @@ use crate::protocol::protocol_commands::Acknowledgements::{
     AcknowledgementCoordinate, AcknowledgementGameLost, AcknowledgementHit, AcknowledgementSetUp,
     AcknowledgementUserName,
 };
-use crate::protocol::protocol_commands::Command;
 use crate::protocol::protocol_commands::Requests::{
     RequestCoordinate, RequestGameLost, RequestSetup, RequestUserName,
 };
@@ -10,11 +9,17 @@ use crate::protocol::protocol_commands::Responses::{
     ResponseCoordinate, ResponseCoordinateList, ResponseGameLost, ResponseHit, ResponseNull,
     ResponseSetUp, ResponseUserName,
 };
+use crate::protocol::protocol_commands::Command;
+use crate::protocol::sanitize::sanitize;
 use itertools::Itertools;
-use regex::Regex;
 use rayon::prelude::*;
+use regex::Regex;
 
-pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
+pub fn parse(input: &str) -> Option<Box<dyn Command>> {
+    // make sure input meets the protocol requirements
+    let san_input = sanitize(input);
+    let input = san_input.as_str();
+
     // check for NULL first to avoid necessary regex
     if input == "NULL" {
         return Some(Box::from(ResponseNull));
@@ -46,8 +51,8 @@ pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
     let game_lost = Regex::new(r"^L:(Y|N)\.$").unwrap();
     if game_lost.find(input).is_some() {
         return match input {
-            "L:Y." => Some(Box::from(ResponseGameLost("Y"))),
-            "L:N." => Some(Box::from(ResponseGameLost("N"))),
+            "L:Y." => Some(Box::from(ResponseGameLost("Y".to_string()))),
+            "L:N." => Some(Box::from(ResponseGameLost("N".to_string()))),
             _ => None,
         };
     }
@@ -57,7 +62,10 @@ pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
         let capture = response_hit_h.captures(input).unwrap();
         let name = capture.get(1);
         if let Some(name) = name {
-            return Some(Box::from(ResponseHit("H", Some(name.as_str()))));
+            return Some(Box::from(ResponseHit(
+                "H".to_string(),
+                Some(name.as_str().to_string()),
+            )));
         }
         return None;
     }
@@ -67,14 +75,17 @@ pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
         let capture = response_hit_s.captures(input).unwrap();
         let name = capture.get(1);
         if let Some(name) = name {
-            return Some(Box::from(ResponseHit("S", Some(name.as_str()))));
+            return Some(Box::from(ResponseHit(
+                "S".to_string(),
+                Some(name.as_str().to_string()),
+            )));
         }
         return None;
     }
 
     let response_hit_m = Regex::new(r"^M\.$").unwrap();
     if response_hit_m.find(input).is_some() {
-        return Some(Box::from(ResponseHit("M", None)));
+        return Some(Box::from(ResponseHit("M".to_string(), None)));
     }
 
     let response_user_name = Regex::new(r"^N:(\S+)\.$").unwrap();
@@ -82,7 +93,7 @@ pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
         let capture = response_user_name.captures(input).unwrap();
         let name = capture.get(1);
         if let Some(name) = name {
-            return Some(Box::from(ResponseUserName(name.as_str())));
+            return Some(Box::from(ResponseUserName(name.as_str().to_string())));
         }
         return None;
     }
@@ -92,7 +103,7 @@ pub fn parse(input: &str) -> Option<Box<dyn Command + '_>> {
         let capture = response_setup.captures(input).unwrap();
         let stat = capture.get(1);
         if let Some(stat) = stat {
-            return Some(Box::from(ResponseSetUp(stat.as_str())));
+            return Some(Box::from(ResponseSetUp(stat.as_str().to_string())));
         }
         return None;
     }
