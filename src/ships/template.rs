@@ -66,11 +66,11 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.width() - ship_size <= 0 || board_size.height() == 0 {
+                    if board_size.nr_rows() - ship_size <= 0 || board_size.nr_columns() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.width() - ship_size);
-                    let column = rng.random_range(0..board_size.height());
+                    let row = rng.random_range(0..board_size.nr_rows() - ship_size);
+                    let column = rng.random_range(0..board_size.nr_columns());
                     Ok(Point::new(row, column))
                 }
             }
@@ -102,11 +102,11 @@ pub trait ShipTemplate {
                         &ship_size
                     ))
                 } else {
-                    if board_size.height() - ship_size <= 0 || board_size.width() == 0 {
+                    if board_size.nr_columns() - ship_size <= 0 || board_size.nr_rows() == 0 {
                         return Err(anyhow!("The Ship is to large to be placed on the board."));
                     }
-                    let row = rng.random_range(0..board_size.width());
-                    let column = rng.random_range(0..board_size.height() - ship_size);
+                    let row = rng.random_range(0..board_size.nr_rows());
+                    let column = rng.random_range(0..board_size.nr_columns() - ship_size);
                     Ok(Point::new(row, column))
                 }
             }

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::board::Board;
 use crate::ships::ship::{Orientation, Point, Ship};
 use crate::ships::template::ShipTemplate;
@@ -50,6 +51,7 @@ impl Display for ShipClass {
         }
     }
 }
+
 
 impl ShipTemplate for ShipClass {
     fn new(
