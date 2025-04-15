@@ -14,7 +14,7 @@ type ShipCount = i32;
 pub struct AiAgent {
     game: Game,
     search_grid: HashMap<ShipClass, (ShipCount, PossiblePlaces)>,
-    limit: usize
+    limit: usize,
 }
 
 impl AiAgent {
@@ -23,7 +23,7 @@ impl AiAgent {
         Self {
             game: game.clone(),
             search_grid: Self::generate_search_grid(ships, &board_set),
-            limit: Self::find_limit(ships)
+            limit: Self::find_limit(ships),
         }
     }
 

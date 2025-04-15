@@ -1,6 +1,6 @@
+use crate::protocol::protocol_commands::Command;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
-use crate::protocol::protocol_commands::Command;
 
 pub fn play(message_queue: Arc<Mutex<VecDeque<Box<dyn Command>>>>) {
     loop {

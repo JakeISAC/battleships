@@ -1,6 +1,6 @@
 use crate::ships::ship::{Orientation, Point};
-use as_any::AsAny;
 use crate::ships::ship_class::ShipClass;
+use as_any::AsAny;
 
 type BoundingBox = Vec<Point>;
 
