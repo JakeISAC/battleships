@@ -97,7 +97,7 @@ pub fn get_ships_io(board: &Board) -> Result<Vec<Ship>> {
     let mut answer: String = String::new();
     std::io::stdin().read_line(&mut answer)?;
 
-    let mut board_points = board.get_board();
+    let mut board_points = board.as_vec();
     let mut occupied: HashSet<Point> = HashSet::new();
     let mut iterator = 0usize;
     let mut ships: Vec<Ship> = Vec::new();

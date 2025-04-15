@@ -1,5 +1,7 @@
 use crate::ships::ship::Point;
 use itertools::Itertools;
+use std::collections::HashSet;
+use std::hash::Hash;
 
 #[derive(Clone)]
 pub struct Board {
@@ -37,15 +39,19 @@ impl Board {
         matrix
     }
 
-    pub fn get_board(&self) -> Vec<Point> {
+    pub fn as_vec(&self) -> Vec<Point> {
         self.points.clone()
     }
 
-    pub fn get_width(&self) -> usize {
+    pub fn as_set(&self) -> HashSet<Point> {
+        self.points.clone().iter().map(|x| x.clone()).collect()
+    }
+
+    pub fn width(&self) -> usize {
         self.width.clone()
     }
 
-    pub fn get_height(&self) -> usize {
+    pub fn height(&self) -> usize {
         self.height.clone()
     }
 }

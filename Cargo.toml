@@ -12,4 +12,3 @@ regex = "1.11.1"
 colored = "3.0.0"
 rayon = "1.10.0"
 as-any = "0.3.2"
-clap = { version = "4.5.35", features = ["derive"] }
