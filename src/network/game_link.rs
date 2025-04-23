@@ -16,7 +16,9 @@ pub fn game_handler(
         match stream {
             Ok(stream) => {
                 if let Some(command) = handle_incoming(stream) {
-                    let mut queue = message_queue.lock().map_err(|e| anyhow::anyhow!("Mutex is poisoned: {:?}", e))?;
+                    let mut queue = message_queue
+                        .lock()
+                        .map_err(|e| anyhow::anyhow!("Mutex is poisoned: {:?}", e))?;
                     queue.push_back(command);
                 }
             }

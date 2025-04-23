@@ -1,3 +1,4 @@
+use crate::board::Board;
 use crate::ships::ship_class::ShipClass;
 use anyhow::Result;
 use std::cmp::PartialEq;
@@ -77,6 +78,20 @@ pub struct Point {
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
+    }
+
+    pub fn simple_bounding_box(&self, board: &Board) -> Option<Vec<Point>> {
+        let mut bounding_box = vec![
+            Point::new(self.x - 1, self.y), // up
+            Point::new(self.x + 1, self.y), // down
+            Point::new(self.x, self.y - 1), // left
+            Point::new(self.x, self.y + 1), // right
+        ];
+        bounding_box.retain(|x| board.contains(x));
+        if bounding_box.is_empty() {
+            return None;
+        }
+        Some(bounding_box)
     }
 }
 

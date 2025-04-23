@@ -1,4 +1,4 @@
-use as_any::{AsAny, Downcast};
+use as_any::AsAny;
 
 pub trait Command: AsAny + Send {
     fn to_string(&self) -> String;
@@ -108,7 +108,6 @@ impl Command for Responses {
         }
     }
 }
-
 
 /*
    # Game Acknowledgment Protocol

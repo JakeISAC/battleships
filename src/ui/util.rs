@@ -1,11 +1,11 @@
 use crate::board::Board;
+use crate::game::game::Game;
 use crate::ships::ship::Ship;
 use anyhow::{anyhow, Result};
 use colored::{Color, ColoredString, Colorize};
 use regex::Regex;
 use std::any::type_name;
 use std::str::FromStr;
-use crate::game::game::Game;
 
 pub(crate) fn sanitize_and_transform<T: FromStr>(input: &str) -> Result<T> {
     let input = input.to_string();
@@ -89,5 +89,8 @@ pub fn print_colored_matrix(matrix: Vec<Vec<ColoredString>>) {
 }
 
 pub fn print_game(game: &Game) {
-    print_colored_matrix(matrix_with_colored_ships(&game.get_board(), &game.get_ships()));
+    print_colored_matrix(matrix_with_colored_ships(
+        &game.get_board(),
+        &game.get_ships(),
+    ));
 }

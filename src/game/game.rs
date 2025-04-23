@@ -5,9 +5,9 @@ use crate::ships::ship_class::ShipClass::{
     AircraftCarrier, Battleship, Destroyer, PatrolBoat, Submarine,
 };
 use crate::ships::template::ShipTemplate;
+use rayon::prelude::*;
 use std::collections::HashSet;
 use std::fmt::Display;
-use rayon::prelude::*;
 
 const SHIPS: [ShipClass; 15] = [
     AircraftCarrier,
@@ -36,7 +36,7 @@ pub struct Game {
 impl Game {
     pub fn auto(width: usize, height: usize) -> Self {
         let board = Board::new(width, height);
-        let mut board_representation = board.get_board();
+        let mut board_representation = board.as_vec();
         let mut occupied: HashSet<Point> = HashSet::new();
 
         let mut ships: Vec<Ship> = Vec::new();

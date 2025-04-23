@@ -4,11 +4,11 @@ use crate::ships::template::ShipTemplate;
 use anyhow::{anyhow, Result};
 use colored::Color;
 use rand::Rng;
+use rayon::prelude::*;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
-use rayon::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ShipClass {
     Destroyer,
     Submarine,

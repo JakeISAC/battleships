@@ -2,6 +2,7 @@ use crate::protocol::protocol_commands::Acknowledgements::{
     AcknowledgementCoordinate, AcknowledgementGameLost, AcknowledgementHit, AcknowledgementSetUp,
     AcknowledgementUserName,
 };
+use crate::protocol::protocol_commands::Command;
 use crate::protocol::protocol_commands::Requests::{
     RequestCoordinate, RequestGameLost, RequestSetup, RequestUserName,
 };
@@ -9,7 +10,6 @@ use crate::protocol::protocol_commands::Responses::{
     ResponseCoordinate, ResponseCoordinateList, ResponseGameLost, ResponseHit, ResponseNull,
     ResponseSetUp, ResponseUserName,
 };
-use crate::protocol::protocol_commands::Command;
 use crate::protocol::sanitize::sanitize;
 use itertools::Itertools;
 use rayon::prelude::*;

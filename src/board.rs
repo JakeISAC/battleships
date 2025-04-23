@@ -1,19 +1,21 @@
 use crate::ships::ship::Point;
 use itertools::Itertools;
+use std::collections::HashSet;
+use std::hash::Hash;
 
 #[derive(Clone)]
 pub struct Board {
-    width: usize,
-    height: usize,
+    nr_rows: usize,
+    nr_columns: usize,
     points: Vec<Point>,
 }
 
 impl Board {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(rows: usize, columns: usize) -> Self {
         Self {
-            width,
-            height,
-            points: Self::generate_board(width, height),
+            nr_rows: rows,
+            nr_columns: columns,
+            points: Self::generate_board(rows, columns),
         }
     }
 
@@ -31,21 +33,29 @@ impl Board {
 
     pub fn matrix_representation(&self) -> Vec<Vec<String>> {
         let mut matrix: Vec<Vec<String>> = Vec::new();
-        for _ in 0..self.width {
-            matrix.push(vec![".".to_string(); self.height])
+        for _ in 0..self.nr_rows {
+            matrix.push(vec![".".to_string(); self.nr_columns])
         }
         matrix
     }
 
-    pub fn get_board(&self) -> Vec<Point> {
+    pub fn as_vec(&self) -> Vec<Point> {
         self.points.clone()
     }
 
-    pub fn get_width(&self) -> usize {
-        self.width.clone()
+    pub fn as_set(&self) -> HashSet<Point> {
+        self.points.clone().iter().map(|x| x.clone()).collect()
     }
 
-    pub fn get_height(&self) -> usize {
-        self.height.clone()
+    pub fn contains(&self, point: &Point) -> bool {
+        self.points.contains(point)
+    }
+
+    pub fn nr_rows(&self) -> usize {
+        self.nr_rows.clone()
+    }
+
+    pub fn nr_columns(&self) -> usize {
+        self.nr_columns.clone()
     }
 }
