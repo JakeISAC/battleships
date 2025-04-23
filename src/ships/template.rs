@@ -38,10 +38,9 @@ pub trait ShipTemplate {
         let mut rng = rand::rng();
         match orientation {
             Orientation::VERTICAL => {
-                let occupied = occupied_places;
-                if !occupied.is_empty() {
+                if !occupied_places.is_empty() {
                     let compliant_points =
-                        Self::compliant_points(occupied, &orientation, &ship_size, board);
+                        Self::compliant_points(occupied_places, &orientation, &ship_size, board);
                     if let Some(options) = compliant_points {
                         let mut options = options.clone();
                         let mut random_point = rng.random_range(0..options.len());
@@ -75,9 +74,8 @@ pub trait ShipTemplate {
                 }
             }
             Orientation::HORIZONTAL => {
-                let occupied = occupied_places;
-                if !occupied.is_empty() {
-                    let options = Self::compliant_points(occupied, &orientation, &ship_size, board);
+                if !occupied_places.is_empty() {
+                    let options = Self::compliant_points(occupied_places, &orientation, &ship_size, board);
                     if let Some(options) = options {
                         let mut options = options.clone();
                         let mut random_point = rng.random_range(0..options.len());

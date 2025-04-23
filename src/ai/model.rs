@@ -1,12 +1,13 @@
+use std::collections::VecDeque;
+use std::sync::{Arc, Mutex};
 use crate::ships::ship::{Orientation, Point};
 use crate::ships::ship_class::ShipClass;
 use as_any::AsAny;
+use crate::protocol::protocol_commands::Command;
 
 type BoundingBox = Vec<Point>;
+type AttackVector = Vec<Point>;
 
 pub(crate) trait Model: AsAny + Send {
-    fn search(&self) -> Option<(ShipClass, Point)>;
-    fn triangulate(&self, initial_point: Point) -> Option<BoundingBox>;
-    fn find_orientation(&self, point_one: &Point, point_two: &Point) -> Option<Orientation>;
-    fn attack(&self, initial_point: Point, hit_points: Vec<Point>);
+    fn play(&self, message_queue: Arc<Mutex<VecDeque<Box<dyn Command>>>>);
 }
