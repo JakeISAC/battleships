@@ -8,6 +8,7 @@ use itertools::Itertools;
 use rayon::prelude::*;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::ops::Range;
 use std::sync::{Arc, Mutex};
 
 type PossiblePlaces = Vec<Point>;
@@ -170,7 +171,8 @@ impl Isac {
        while searching.
     */
     pub fn search(&self) -> Option<(ShipClass, PossiblePlaces)> {
-        let mut map: HashMap<ShipClass, (ShipCount, PossiblePlaces)> = self.search_grid
+        let mut map: HashMap<ShipClass, (ShipCount, PossiblePlaces)> = self
+            .search_grid
             .clone()
             .iter()
             .sorted_by(|(_, (_, places1)), (_, (_, places2))| places1.len().cmp(&places2.len()))
@@ -205,7 +207,7 @@ impl Isac {
             }
             return Some(available_points);
         }
-        // if there is not bounding box for initial, simply return None
+        // if there is not bounding box for initial, return None
         None
     }
 
@@ -224,42 +226,88 @@ impl Isac {
     pub fn attack(
         &self,
         hit_points: &Vec<Point>,
-        orientation: Orientation,
+        orientation: &Orientation,
     ) -> (ConfirmationPoints, AttackVector) {
         let offset = self.limit - hit_points.len();
+        let mut hits = hit_points.clone();
         match orientation {
-            // move along y-axis, x stays the same
+            // move along column-axis, row stays the same
             Orientation::HORIZONTAL => {
-                let mut hits = hit_points.clone();
                 hits.sort_by(|x, y| x.y.cmp(&y.y));
-
-                let left_neighbours: Vec<Point> = Vec::new();
-                let right_neighbours: Vec<Point> = Vec::new();
-
-                if let Some(first) = hits.first() {
-                    let last = hits.last().unwrap();
-                    if first == last {
-                        let range_left = 0..first.y;
-                        let range_right = first.y..self.game.get_board().nr_columns();
-                    } else {
-                        todo!()
-                    }
-                }
-                todo!()
+                todo!();
             }
-            // move along x-axis, y stays the same
+            // move along row-axis, column stays the same
             Orientation::VERTICAL => {
-                todo!()
+                hits.sort_by(|x, y| x.x.cmp(&y.x));
+                todo!();
             }
         }
     }
 
-    fn make_neighbours(point: &Point, board: &Board) {
-        let mut left: Vec<Point> = Vec::new();
-        let mut right: Vec<Point> = Vec::new();
+    /*
+       Generate
+    */
+    fn make_neighbours(
+        points: &Vec<Point>,
+        board: &Board,
+        orientation: &Orientation,
+    ) -> Option<(Vec<Point>, Vec<Point>)> {
+        if let Some(first) = points.first() {
+            let last = points.last().unwrap();
+            // storage buffers
+            let mut beginning: Vec<Point> = Vec::new();
+            let mut end: Vec<Point> = Vec::new();
+            // ranges for the neighbors
+            let range_beginning: Range<usize>;
+            let range_end: Range<usize>;
+            match orientation {
+                Orientation::HORIZONTAL => {
+                    // check for overlaps
+                    if last == first {
+                        range_beginning = 0..first.y;
+                        range_end = first.y + 1..board.nr_columns();
+                    } else {
+                        range_beginning = 0..first.y;
+                        range_end = last.y + 1..board.nr_columns();
+                    }
 
-        let range_left: Vec<usize> = (0..point.y).collect();
-        let range_right = point.y..board.nr_columns();
+                    // left points
+                    for y in range_beginning {
+                        beginning.push(Point::new(first.x, y));
+                    }
+
+                    // right positions
+                    for y in range_end {
+                        end.push(Point::new(first.x, y));
+                    }
+                }
+                Orientation::VERTICAL => {
+                    if last == first {
+                        range_beginning = 0..first.x;
+                        range_end = first.x + 1..board.nr_rows();
+                    } else {
+                        range_beginning = 0..first.x;
+                        range_end = last.x + 1..board.nr_rows();
+                    }
+
+                    // points above the current hit point vector
+                    for x in range_beginning {
+                        beginning.push(Point::new(x, first.y))
+                    }
+
+                    // points below the current git point vector
+                    for x in range_end {
+                        end.push(Point::new(x, first.y))
+                    }
+                }
+            };
+            if beginning.is_empty() && end.is_empty() {
+                return None;
+            }
+            return Some((beginning, end));
+        }
+
+        None
     }
 }
 
@@ -270,7 +318,7 @@ impl Model for Isac {
                 continue;
             }
             // Code for actual game handling
-            todo!()
+            todo!();
         }
     }
 }
