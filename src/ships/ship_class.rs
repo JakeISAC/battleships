@@ -42,11 +42,11 @@ impl ShipClass {
     pub fn size_to_class(size: usize) -> Option<ShipClass> {
         match size {
             3 => Some(ShipClass::Destroyer),
-           // 3 => Some(ShipClass::Submarine),
+            // 3 => Some(ShipClass::Submarine),
             4 => Some(ShipClass::Battleship),
             2 => Some(ShipClass::PatrolBoat),
             5 => Some(ShipClass::AircraftCarrier),
-            _ => None
+            _ => None,
         }
     }
 }

@@ -19,10 +19,6 @@ mod protocol;
 mod ships;
 mod ui;
 
-use anyhow::Result;
-use crate::board::Board;
-use crate::game::game::Game;
-
 fn main() {
     let port = 1332;
     let mut queue = Arc::new(Mutex::new(VecDeque::new()));

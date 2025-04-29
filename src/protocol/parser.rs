@@ -48,7 +48,7 @@ pub fn parse(input: &str) -> Option<Box<dyn Command>> {
         };
     }
 
-    let game_lost = Regex::new(r"^L:(Y|N)\.$").unwrap();
+    let game_lost = Regex::new(r"^L:([YN])\.$").unwrap();
     if game_lost.find(input).is_some() {
         return match input {
             "L:Y." => Some(Box::from(ResponseGameLost("Y".to_string()))),

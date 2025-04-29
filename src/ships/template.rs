@@ -43,9 +43,8 @@ pub trait ShipTemplate {
                         Self::compliant_points(occupied_places, &orientation, &ship_size, board);
                     if let Some(options) = compliant_points {
                         let mut options = options.clone();
-                        let mut random_point = rng.random_range(0..options.len());
                         while !options.is_empty() {
-                            random_point = rng.random_range(0..options.len());
+                            let random_point = rng.random_range(0..options.len());
                             let chosen = options[random_point].clone();
                             let mut modules: Vec<Point> = Vec::new();
                             for i in 0..=ship_size {
@@ -75,7 +74,8 @@ pub trait ShipTemplate {
             }
             Orientation::HORIZONTAL => {
                 if !occupied_places.is_empty() {
-                    let options = Self::compliant_points(occupied_places, &orientation, &ship_size, board);
+                    let options =
+                        Self::compliant_points(occupied_places, &orientation, &ship_size, board);
                     if let Some(options) = options {
                         let mut options = options.clone();
                         let mut random_point = rng.random_range(0..options.len());
@@ -122,7 +122,7 @@ pub trait ShipTemplate {
     {
         // filter out available positions
         board.retain(|x| !occupied.contains(x));
-        // create local tmp board as hashset look up
+        // create a local tmp board as hashset look up
         let point_set: HashSet<&Point> = board.iter().collect();
         // return points that meet the criteria of orientation and ship size
         match orientation {
@@ -158,7 +158,7 @@ pub trait ShipTemplate {
                 Board contains at least two points, where if there is a point (x, y) there also needs to be
                 a point (x, y + ship_size)
                  */
-                let mut possible: Vec<Point> = point_set
+                let possible: Vec<Point> = point_set
                     .par_iter()
                     .filter_map(|point| {
                         let target_point = Point {

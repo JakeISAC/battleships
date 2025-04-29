@@ -83,6 +83,10 @@ impl Game {
         self.board.clone()
     }
 
+    pub fn get_board_as_ref(&self) -> &Board {
+        &self.board
+    }
+
     pub fn get_ships(&self) -> Vec<Ship> {
         self.ships.clone()
     }

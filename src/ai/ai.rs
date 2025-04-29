@@ -8,15 +8,30 @@ use itertools::Itertools;
 use rayon::prelude::*;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::ops::Range;
 use std::sync::{Arc, Mutex};
 
 type PossiblePlaces = Vec<Point>;
 type ShipCount = i32;
 type BoundingBox = Vec<Point>;
-type AttackVector = (Vec<Point>, Vec<Point>);
+type AttackVector = (VecDeque<Point>, VecDeque<Point>);
 
-type ConfirmationPoints = Vec<(Point, Point)>;
+/*
+   So, basically what these points give is confidence about the attack.
+   To actually proceed with the attack, 50% confidence is needed.
+   There are 4 confirmation points, so each 25%.
+
+   Without the 50% threshold, I reporpse the hit points as separate hit points
+   for the next tour of attacks.
+
+   Also, the in-between points need to be confirmed in full a.k.a the entire vector.
+   If not all in-between points are valid ship points, this leads us to believe
+   that we encountered two separate ships. Then for the future attack queue the left
+   most in-between hit points need to be allocated to before and the others to after.
+
+*/
+type ConfirmationPoints = (VecDeque<Point>, (Option<Point>, Option<Point>)); // (In-between, edges) --> (main, if main empty)
+
+type Neighbours = (VecDeque<Point>, VecDeque<Point>, VecDeque<Point>);
 
 pub struct Isac {
     game: Game,
@@ -171,7 +186,7 @@ impl Isac {
        while searching.
     */
     pub fn search(&self) -> Option<(ShipClass, PossiblePlaces)> {
-        let mut map: HashMap<ShipClass, (ShipCount, PossiblePlaces)> = self
+        let map: HashMap<ShipClass, (ShipCount, PossiblePlaces)> = self
             .search_grid
             .clone()
             .iter()
@@ -189,7 +204,7 @@ impl Isac {
 
     pub fn triangulate(&self, initial_point: Point) -> Option<PossiblePlaces> {
         // calculate the initial a.k.a simple bounding box for a ship
-        let mut bounding_box = initial_point.simple_bounding_box(&self.game.get_board());
+        let bounding_box = initial_point.simple_bounding_box(self.game.get_board_as_ref());
         // filter found simple points against search grid to determine weather they are available
         // if a point is an `island` it should return None
         if let Some(bounding_box) = bounding_box {
@@ -227,90 +242,117 @@ impl Isac {
         &self,
         hit_points: &Vec<Point>,
         orientation: &Orientation,
-    ) -> (ConfirmationPoints, AttackVector) {
-        let offset = self.limit - hit_points.len();
+    ) -> Option<(ConfirmationPoints, AttackVector)> {
         let mut hits = hit_points.clone();
-        match orientation {
-            // move along column-axis, row stays the same
-            Orientation::HORIZONTAL => {
-                hits.sort_by(|x, y| x.y.cmp(&y.y));
-                todo!();
-            }
-            // move along row-axis, column stays the same
-            Orientation::VERTICAL => {
-                hits.sort_by(|x, y| x.x.cmp(&y.x));
-                todo!();
-            }
+        let offset = if hits.len() >= self.limit {
+            self.limit
+        } else {
+            self.limit - hits.len()
+        };
+
+        if orientation == &Orientation::HORIZONTAL {
+            hits.sort_by(|x, y| x.y.cmp(&y.y));
+        } else {
+            hits.sort_by(|x, y| x.x.cmp(&y.x));
         }
-    }
 
-    /*
-       Generate
-    */
-    fn make_neighbours(
-        points: &Vec<Point>,
-        board: &Board,
-        orientation: &Orientation,
-    ) -> Option<(Vec<Point>, Vec<Point>)> {
-        if let Some(first) = points.first() {
-            let last = points.last().unwrap();
-            // storage buffers
-            let mut beginning: Vec<Point> = Vec::new();
-            let mut end: Vec<Point> = Vec::new();
-            // ranges for the neighbors
-            let range_beginning: Range<usize>;
-            let range_end: Range<usize>;
-            match orientation {
-                Orientation::HORIZONTAL => {
-                    // check for overlaps
-                    if last == first {
-                        range_beginning = 0..first.y;
-                        range_end = first.y + 1..board.nr_columns();
-                    } else {
-                        range_beginning = 0..first.y;
-                        range_end = last.y + 1..board.nr_columns();
-                    }
+        let neighbours =
+            Self::calculate_neighbours(&hits, self.game.get_board_as_ref(), orientation, offset);
 
-                    // left points
-                    for y in range_beginning {
-                        beginning.push(Point::new(first.x, y));
-                    }
-
-                    // right positions
-                    for y in range_end {
-                        end.push(Point::new(first.x, y));
-                    }
-                }
-                Orientation::VERTICAL => {
-                    if last == first {
-                        range_beginning = 0..first.x;
-                        range_end = first.x + 1..board.nr_rows();
-                    } else {
-                        range_beginning = 0..first.x;
-                        range_end = last.x + 1..board.nr_rows();
-                    }
-
-                    // points above the current hit point vector
-                    for x in range_beginning {
-                        beginning.push(Point::new(x, first.y))
-                    }
-
-                    // points below the current git point vector
-                    for x in range_end {
-                        end.push(Point::new(x, first.y))
-                    }
-                }
-            };
-            if beginning.is_empty() && end.is_empty() {
-                return None;
-            }
-            return Some((beginning, end));
+        if let Some(neighbours) = neighbours {
+            let (mut before, in_between, mut after) = neighbours;
+            let edges = (before.pop_back(), after.pop_back());
+            return Some(((in_between, edges), (before, after)));
         }
 
         None
     }
+
+    fn calculate_neighbours(
+        points: &Vec<Point>,
+        board: &Board,
+        orientation: &Orientation,
+        offset: usize,
+    ) -> Option<Neighbours> {
+        if let Some(first) = points.first() {
+            let last = points.last().unwrap();
+            // storage buffer
+            let mut neighbours_before: VecDeque<Point> = VecDeque::new();
+            let mut neighbours_in_between: VecDeque<Point> = VecDeque::new();
+            let mut neighbours_after: VecDeque<Point> = VecDeque::new();
+            match orientation {
+                Orientation::HORIZONTAL => {
+                    // check for overlaps
+                    let beginning: usize = first.y.saturating_sub(offset);
+                    let end: usize = (last.y + offset).max(board.nr_columns());
+                    // ranges
+
+                    // here we reverse the ranges because we want the first elem in the array
+                    // to be as close to the original first.y and gradually move to 0, and for the
+                    // end we want to be as close to last y and move toward the edge of the plain board.
+
+                    // finally, I decided to not reverse the stream because I can easily
+                    // take the proper value using pop, since Vec does not implement pop_front();
+                    let range_left = beginning..first.y;
+                    let range_in_between = first.y + 1..last.y;
+                    let range_right = last.y + 1..end;
+
+                    for y in range_left {
+                        let point = Point::new(first.x, y);
+                        if !points.contains(&point) {
+                            neighbours_before.push_back(point);
+                        }
+                    }
+                    for y in range_in_between {
+                        let point = Point::new(first.x, y);
+                        if !points.contains(&point) {
+                            neighbours_in_between.push_back(point);
+                        }
+                    }
+                    for y in range_right {
+                        let point = Point::new(first.x, y);
+                        if !points.contains(&point) {
+                            neighbours_after.push_back(point);
+                        }
+                    }
+                }
+                Orientation::VERTICAL => {
+                    // check for overlaps
+                    let beginning: usize = first.x.saturating_sub(offset);
+                    let end: usize = (last.x + offset).max(board.nr_rows());
+                    // ranges
+                    let range_left = beginning..first.x;
+                    let range_in_between = first.x + 1..last.x;
+                    let range_right = last.x + 1..end;
+
+                    for x in range_left {
+                        let point = Point::new(x, first.y);
+                        if !points.contains(&point) {
+                            neighbours_before.push_back(point);
+                        }
+                    }
+                    for x in range_in_between {
+                        let point = Point::new(x, first.y);
+                        if !points.contains(&point) {
+                            neighbours_in_between.push_back(point);
+                        }
+                    }
+                    for x in range_right {
+                        let point = Point::new(x, first.y);
+                        if !points.contains(&point) {
+                            neighbours_after.push_back(point);
+                        }
+                    }
+                }
+            };
+
+            return Some((neighbours_before, neighbours_in_between, neighbours_after));
+        }
+        None
+    }
 }
 
+const ATTACK_THREASHOLD: f32 = 5.0; // 50%
 impl Model for Isac {
     fn play(&self, message_queue: Arc<Mutex<VecDeque<Box<dyn Command>>>>) {
         loop {
