@@ -19,9 +19,7 @@ mod protocol;
 mod ships;
 mod ui;
 
-use anyhow::Result;
-
-fn main() -> Result<()> {
+fn main() {
     let port = 1332;
     let mut queue = Arc::new(Mutex::new(VecDeque::new()));
     let mut threaded_queue = Arc::clone(&queue);
@@ -37,6 +35,4 @@ fn main() -> Result<()> {
             .for_each(|x| println!("{}", x.to_string()));
         sleep(Duration::from_secs(2));
     }
-
-    Ok(())
 }
