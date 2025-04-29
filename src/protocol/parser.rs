@@ -152,8 +152,7 @@ pub fn parse(input: &str) -> Option<Box<dyn Command>> {
                 .collect();
             let pairs: Vec<(usize, usize)> = numeric
                 .iter()
-                .step_by(2)
-                .zip(numeric.iter().skip(1).step_by(2))
+                .tuples()
                 .map(|(x, y)| (x.clone(), y.clone()))
                 .collect();
             return Some(Box::from(ResponseCoordinateList(pairs)));

@@ -5,6 +5,7 @@ use std::cmp::PartialEq;
 use std::fmt::{Display, Formatter};
 use std::ops::Not;
 use std::str::FromStr;
+use rayon::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Orientation {
@@ -211,7 +212,7 @@ impl Ship {
     }
 
     pub fn is_sunk(&self) -> bool {
-        self.fields.iter().all(|x| matches!(x, Status::HIT(_)))
+        self.fields.par_iter().all(|x| matches!(x, Status::HIT(_)))
     }
 
     pub fn get_class(&self) -> ShipClass {
@@ -221,7 +222,7 @@ impl Ship {
     pub fn get_fields(&self) -> Vec<Point> {
         self.fields
             .clone()
-            .iter()
+            .par_iter()
             .filter_map(|status| match status {
                 Status::HIT(point) | Status::OK(point) => Some(point.clone()),
             })
